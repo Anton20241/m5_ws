@@ -196,7 +196,7 @@ void printMat(std::vector<std::vector<double>> &mat){
   {
     for (auto iter = mat[i].begin(); iter != mat[i].end(); iter++)
     {
-      printf("%.6f ", *iter);
+      printf("%.0f ", *iter);
     }
     std::cout << "\n";
   }
@@ -214,13 +214,18 @@ void getChessBoardCorners(cv::Mat &img, std::vector<cv::Point2f> &foundCorners, 
   }
 }
 
-void printVecPoint2f(const std::vector<cv::Point2f> &foundCorners){
-  printf("\nfoundCorners:\n");
-  for (size_t i = 0; i < foundCorners.size(); i++)
+void printVecPoint2f(const std::vector<cv::Point2f> &vec){
+  for (size_t i = 0; i < vec.size(); i++)
   {
-    std::cout << foundCorners[i].x << "\t\t" << foundCorners[i].y << std::endl;
+    std::cout << vec[i].x << "\t\t" << vec[i].y << std::endl;
   }
-  
+}
+
+void printVecDouble(const std::vector<double> &vec){
+  for (size_t i = 0; i < vec.size(); i++)
+  {
+    std::cout << vec[i] << std::endl;
+  }
 }
 
 void reverse(std::vector<cv::Point2f> &foundCorners){
@@ -260,26 +265,53 @@ void getXYPixelIntersectionsCoordForAllFrames(const std::vector<std::vector<doub
   }
 }
 
-void getPopugay(const  vector<vector<Point2f>> &allFoundCorners, vector<double> &popugayVec, const size_t &i){
-  std::vector<std::vector<double>> m_depthFrame;
+void getPopugayForOnePoint( const vector<vector<Point2f>> &allFoundCorners,
+                            const std::vector<std::vector<double>> &m_depthFrame,
+                            double &popugay,
+                            const size_t &i,
+                            const size_t &j){
+  popugay = m_depthFrame[allFoundCorners[i][j].x][allFoundCorners[i][j].y];
 
+  // allFoundCorners[i]    - вектор найденных углов на i кадре
+  // allFoundCorners[i][j] - j угол на i кадре
+  // allFoundCorners[i][j].x
+  // allFoundCorners[i][j].y
+
+}
+
+void getPopugaysForOneFrame(const  vector<vector<Point2f>> &allFoundCorners, vector<double> &popugayVec, const size_t &i){ // для 1 кадра
+  
+  std::vector<std::vector<double>> m_depthFrame;
   std::string fileAddr1 = "m5_calib/m_depthFrame";
   std::string fileAddr2 = std::to_string(i);
   std::string fileAddr3 = ".txt";
   std::string fileAddr  = fileAddr1 + fileAddr2 + fileAddr3;
 
   getMatFromFile(m_depthFrame, fileAddr);
-  printf("\nm_depthFrame:\n");
-  printMat(m_depthFrame);
+  // printf("\nm_depthFrame:\n");
+  // printMat(m_depthFrame);
+
+  // std::cout << "m_depthFrame.size() = " << m_depthFrame.size() << std::endl;
+  // std::cout << "m_depthFrame[0].size() = " << m_depthFrame[0].size() << std::endl;
+  
+  for (size_t j = 0; j < allFoundCorners[i].size(); j++)    // для всех точек кадра
+  {
+    double popugay = 0;
+    getPopugayForOnePoint(allFoundCorners, m_depthFrame, popugay, i, j);
+    popugayVec.push_back(popugay);
+  }
+  std::cout << "\npopugayVec:\n";
+  printVecDouble(popugayVec);
+
 }
 
 void getPopugaysForAllFrames(const  vector<vector<Point2f>> &allFoundCorners, 
                                     vector<vector<double>> &popugayMat){
-  for (size_t i = 0; i < allFoundCorners.size(); i++)   // всего 18 векторов
+  for (size_t i = 0; i < allFoundCorners.size(); i++)               // всего 18 векторов
   {
     vector<double> popugayVec;
-    getPopugay(allFoundCorners, popugayVec, i);
-    std::cout << "popugayVec.size() = " << popugayVec.size() << std::endl;
+    getPopugaysForOneFrame(allFoundCorners, popugayVec, i);          // получаем вектор попугаев для 1 кадра
+    // std::cout << "popugayVec.size() = " << popugayVec.size() << std::endl;
     popugayMat.push_back(popugayVec);
   }
   
