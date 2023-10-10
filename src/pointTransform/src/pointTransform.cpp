@@ -11,6 +11,7 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/aruco.hpp>
 #include <opencv2/calib3d.hpp>
+#include <math.h>
 
 using namespace std;
 using namespace cv;
@@ -272,14 +273,14 @@ void getPopugayForOnePoint( const vector<vector<Point2f>> &allFoundCorners,
                             const size_t &j){
 
   popugay = 0;
-  popugay = m_depthFrame[(int)allFoundCorners[i][j].y][(int)allFoundCorners[i][j].x];
+  popugay = m_depthFrame[std::round(allFoundCorners[i][j].y)][std::round(allFoundCorners[i][j].x)];
 
   int count = 0;
   while (popugay == 0){
     count ++;
-    for (size_t k = (int)allFoundCorners[i][j].y - count; k < (int)allFoundCorners[i][j].y + count; k++)
+    for (size_t k = std::round(allFoundCorners[i][j].y) - count; k < std::round(allFoundCorners[i][j].y) + count; k++)
     {
-      for (size_t m = (int)allFoundCorners[i][j].x - count; m < (int)allFoundCorners[i][j].x + count; m++)
+      for (size_t m = std::round(allFoundCorners[i][j].x) - count; m < std::round(allFoundCorners[i][j].x) + count; m++)
       {
         std::cout << "k = " << k << " m = " << m << std::endl;
         std::cout << "m_depthFrame[k][m] = " << m_depthFrame[k][m] << std::endl;
