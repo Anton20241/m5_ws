@@ -258,7 +258,7 @@ void getXYPixelIntersectionsCoordForAllFrames(const std::vector<std::vector<doub
     std::vector<cv::Point2f> foundCorners;
     getChessBoardCorners(img, foundCorners, 1, i);
     reverse(foundCorners);
-    std::cout << "foundCorners.size() = " << foundCorners.size() << std::endl;
+    // std::cout << "foundCorners.size() = " << foundCorners.size() << std::endl;
     allFoundCorners.push_back(foundCorners);
     printVecPoint2f(foundCorners);
     waitKey(0);
@@ -270,7 +270,23 @@ void getPopugayForOnePoint( const vector<vector<Point2f>> &allFoundCorners,
                             double &popugay,
                             const size_t &i,
                             const size_t &j){
-  popugay = m_depthFrame[allFoundCorners[i][j].x][allFoundCorners[i][j].y];
+
+  popugay = 0;
+  popugay = m_depthFrame[(int)allFoundCorners[i][j].y][(int)allFoundCorners[i][j].x];
+
+  int count = 0;
+  while (popugay == 0){
+    count ++;
+    for (size_t k = (int)allFoundCorners[i][j].y - count; k < (int)allFoundCorners[i][j].y + count; k++)
+    {
+      for (size_t m = (int)allFoundCorners[i][j].x - count; m < (int)allFoundCorners[i][j].x + count; m++)
+      {
+        std::cout << "k = " << k << " m = " << m << std::endl;
+        std::cout << "m_depthFrame[k][m] = " << m_depthFrame[k][m] << std::endl;
+        popugay = m_depthFrame[k][m];
+      }
+    }
+  }
 
   // allFoundCorners[i]    - вектор найденных углов на i кадре
   // allFoundCorners[i][j] - j угол на i кадре
