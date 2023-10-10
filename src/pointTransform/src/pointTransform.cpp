@@ -214,10 +214,34 @@ void getChessBoardCorners(cv::Mat &img, std::vector<cv::Point2f> &foundCorners, 
   }
 }
 
+void printVecPoint2f(const std::vector<cv::Point2f> &foundCorners){
+  printf("\nfoundCorners:\n");
+  for (size_t i = 0; i < foundCorners.size(); i++)
+  {
+    std::cout << foundCorners[i].x << "\t\t" << foundCorners[i].y << std::endl;
+  }
+  
+}
+
+void reverse(std::vector<cv::Point2f> &foundCorners){
+  std::vector<cv::Point2f> tmpFoundCorners;
+
+  for (size_t i = 0; i < 9; i++)
+  {
+    for (size_t j = 0; j < 6; j++)
+    {
+      tmpFoundCorners.push_back(foundCorners[j * 9 + i]);
+    }
+  }
+  foundCorners.clear();
+  foundCorners = tmpFoundCorners;
+
+}
+
 void getXYPixelIntersectionsCoordForAllFrames(const std::vector<std::vector<double>> &TranslationVectors,
                                               vector<vector<Point2f>> &allFoundCorners){
 
-  for (size_t i = 0; i < TranslationVectors.size(); i++)  // для всех кадров i < TranslationVectors.size()
+  for (size_t i = 0; i < 1; i++)  // для всех кадров i < TranslationVectors.size()
   {
     cv::Mat img;
     std::string imgAddr1 = "m5_calib/m_depthFrame";
@@ -226,13 +250,29 @@ void getXYPixelIntersectionsCoordForAllFrames(const std::vector<std::vector<doub
     std::string imgAddr  = imgAddr1 + imgAddr2 + imgAddr3;
     img = cv::imread(imgAddr, cv::IMREAD_COLOR);
     assert(!img.empty());
-    imshow("IMG_" + std::to_string(i), img);
     std::vector<cv::Point2f> foundCorners;
     getChessBoardCorners(img, foundCorners, 1, i);
+    reverse(foundCorners);
     std::cout << "foundCorners.size() = " << foundCorners.size() << std::endl;
-    allFoundCorners.push_back(foundCorners); 
+    allFoundCorners.push_back(foundCorners);
+    printVecPoint2f(foundCorners);
+    waitKey(0);
   }
-  waitKey(0);
+}
+
+void getPopugay(const  vector<vector<Point2f>> &allFoundCorners, double &popugay, const size_t &i){
+  
+}
+
+void getPopugaysForAllFrames(const  vector<vector<Point2f>> &allFoundCorners, 
+                                    vector<vector<double>> &popugayMat){
+  for (size_t i = 0; i < allFoundCorners.size(); i++)
+  {
+    double popugay = 0;
+    getPopugay(allFoundCorners, popugay, i);
+
+  }
+  
 }
 
 int main(int argc, char** argv){
@@ -249,18 +289,21 @@ int main(int argc, char** argv){
   getMatFromFile(TranslationVectors, "TranslationVectors.txt");
   getMatFromFile(RotationVectors,    "RotationVectors.txt");
 
-  printf("\nWorldPoints:\n");
-  printMat(WorldPoints);
-  printf("\nTranslationVectors:\n");
-  printMat(TranslationVectors);
-  printf("\nRotationVectors:\n");
-  printMat(RotationVectors);
+  // printf("\nWorldPoints:\n");
+  // printMat(WorldPoints);
+  // printf("\nTranslationVectors:\n");
+  // printMat(TranslationVectors);
+  // printf("\nRotationVectors:\n");
+  // printMat(RotationVectors);
 
   // getZWorldCoordForAllFrames(WorldPoints, TranslationVectors, RotationVectors, listener);
 
   vector<vector<Point2f>> allFoundCorners;  // 22 х 54 углов шахматной доски
   getXYPixelIntersectionsCoordForAllFrames(TranslationVectors, allFoundCorners);
   std::cout << "allFoundCorners.size() = " << allFoundCorners.size() << std::endl;
+
+  vector<vector<double>> popugayMat;        // 22 x 54 попугая шахматной доски
+  getPopugaysForAllFrames(allFoundCorners, popugayMat);
 
 
 
