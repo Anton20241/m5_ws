@@ -218,7 +218,7 @@ void getChessBoardCorners(cv::Mat &img, std::vector<cv::Point2f> &foundCorners, 
 void printVecPoint2f(const std::vector<cv::Point2f> &vec){
   for (size_t i = 0; i < vec.size(); i++)
   {
-    std::cout << vec[i].x << "\t\t" << vec[i].y << std::endl;
+    std::cout << std::round(vec[i].x) + 1 << "\t" << std::round(vec[i].y) + 1 << std::endl;
   }
 }
 
@@ -266,6 +266,39 @@ void getXYPixelIntersectionsCoordForAllFrames(const std::vector<std::vector<doub
   }
 }
 
+void getPopugaysMatROI(const  std::vector<std::vector<double>> &m_depthFrame,
+                              std::vector<std::vector<double>> &popugaysMatROI,
+                              const int &row,
+                              const int &col,
+                              const size_t &levelAvg){
+  double popugay_temp = 0;
+  for (size_t k = row - levelAvg; k <= row + levelAvg; k++)
+  {
+    std::vector<double> popugaysLineROI;
+    for (size_t m = col - levelAvg; m <= col + levelAvg; m++)
+    {
+      popugay_temp = m_depthFrame[k][m];
+      popugaysLineROI.push_back(popugay_temp);
+    }
+    popugaysMatROI.push_back(popugaysLineROI);
+  }
+
+}
+
+void getAvgPopugay(const std::vector<std::vector<double>> &m_depthFrame,
+                  double &popugay,
+                  const int &row,
+                  const int &col,
+                  const size_t &levelAvg){
+
+  std::vector<std::vector<double>> popugaysMatROI;
+  
+  getPopugaysMatROI(m_depthFrame, popugaysMatROI, row, col, levelAvg);
+  std::cout << "popugaysMatROI:";
+  printMat(popugaysMatROI);
+
+}
+
 void getPopugayForOnePoint( const vector<vector<Point2f>> &allFoundCorners,
                             const std::vector<std::vector<double>> &m_depthFrame,
                             double &popugay,
@@ -273,21 +306,32 @@ void getPopugayForOnePoint( const vector<vector<Point2f>> &allFoundCorners,
                             const size_t &j){
 
   popugay = 0;
-  popugay = m_depthFrame[std::round(allFoundCorners[i][j].y)][std::round(allFoundCorners[i][j].x)];
+  int row = std::round(allFoundCorners[i][j].y);
+  int col = std::round(allFoundCorners[i][j].x);
+  popugay = m_depthFrame[row][col];
 
-  int count = 0;
-  while (popugay == 0){
-    count ++;
-    for (size_t k = std::round(allFoundCorners[i][j].y) - count; k < std::round(allFoundCorners[i][j].y) + count; k++)
-    {
-      for (size_t m = std::round(allFoundCorners[i][j].x) - count; m < std::round(allFoundCorners[i][j].x) + count; m++)
-      {
-        std::cout << "k = " << k << " m = " << m << std::endl;
-        std::cout << "m_depthFrame[k][m] = " << m_depthFrame[k][m] << std::endl;
-        popugay = m_depthFrame[k][m];
-      }
-    }
+  if (popugay == 0){
+    std::cout << "row = " << row + 1 << " col = " << col + 1 << std::endl;
+    getAvgPopugay(m_depthFrame, popugay, row, col, 3);
   }
+
+  // if (popugay == 0){
+  //   std::cout << "row = " << row << " col = " << col << std::endl;
+  //   getAvgPopugay(m_depthFrame, popugay, row, col, 10);
+  //   // while (popugay == 0){
+  //   //   level ++;
+  //   //   for (size_t k = std::round(allFoundCorners[i][j].y) - level; k < std::round(allFoundCorners[i][j].y) + level; k++)
+  //   //   {
+  //   //     for (size_t m = std::round(allFoundCorners[i][j].x) - level; m < std::round(allFoundCorners[i][j].x) + level; m++)
+  //   //     {
+  //   //       std::cout << "k = " << k << " m = " << m << std::endl;
+  //   //       std::cout << "m_depthFrame[k][m] = " << m_depthFrame[k][m] << std::endl;
+  //   //       popugay = m_depthFrame[k][m];
+  //   //     }
+  //   //   }
+  //   // }
+  // }
+
 
   // allFoundCorners[i]    - вектор найденных углов на i кадре
   // allFoundCorners[i][j] - j угол на i кадре
